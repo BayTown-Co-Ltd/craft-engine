@@ -1,0 +1,38 @@
+name: 构建 CraftEngine 插件
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java-version: [17, 21]
+
+    steps:
+      - name: 签出代码
+        uses: actions/checkout@v3
+
+      - name: 设置 JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+
+      - name: 赋予 gradlew 执行权限
+        run: chmod +x ./gradlew
+
+      - name: 使用 Gradle 构建项目
+        run: ./gradlew build
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: craftengine-artifact-jdk${{ matrix.java-version }}
+          path: target/*.jar  # 按你的产物实际路径调整
